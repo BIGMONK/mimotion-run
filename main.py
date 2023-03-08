@@ -1,6 +1,6 @@
 # -*- coding: utf8 -*-
 import requests, time, datetime, re, sys, os, json, random, math
-global skey,sckey,position,base_url,req_url,corpid,corpsecret,agentid,touser,toparty,totag,open_get_weather,area,qweather
+global skey,sckey,pushplus,base_url,req_url,corpid,corpsecret,agentid,touser,toparty,totag
 
 class MiMotion():
     name = "小米运动"
@@ -56,9 +56,10 @@ class MiMotion():
             print(e)
             return
 
+    # 企业微信推送
     def run(self,msg):
         try:
-            if position == "ture":
+            if corpid != 'NO' and corpsecret != 'NO' and agentid != 'NO':
                 data = {
                     "touser": touser,
                     "toparty": toparty,
@@ -83,6 +84,28 @@ class MiMotion():
         except Exception as e:
              print(e)
              return
+
+    # 推送pushplus
+    def push_pushplus(self, title, content=""):
+        try:
+            if pushplus == 'NO':
+                print(pushplus == "NO")
+                return
+            else:
+                server_url = f"http://www.pushplus.plus/send?token={pushplus}&title={title}&content={content}"
+                response = requests.get(server_url).text
+
+                print('pushplus推送:')
+                print(response)
+        except Exception as e:
+            print(e)
+            return
+
+    def pushAll(self, msg):
+        self.push('【小米运动步数修改】', msg)
+        self.push_wx(msg)
+        self.push_pushplus('【小米运动步数修改】', msg)
+        self.run(msg)
 
 
     def get_time(self):
@@ -160,30 +183,19 @@ class MiMotion():
             print(e)
             return
 
-    def main(self):
+    def main(self, hour, minute):
         try:
             user = str(self.check_item.get("user"))
             password = str(self.check_item.get("password"))
-            hea = {'User-Agent': 'Mozilla/5.0'}
-            url = r'https://apps.game.qq.com/CommArticle/app/reg/gdate.php'
-            r = requests.get(url=url, headers=hea)
-            if r.status_code == 200:
-                result = r.text
-                pattern = re.compile('\\d{4}-\\d{2}-\\d{2} (\\d{2}):\\d{2}:\\d{2}')
-                find = re.search(pattern, result)
-                hour = find.group(1)
-                min_ratio = int(hour) / 22
-                max_ratio = int(hour) / 21
-            else:
-                min_ratio = 0.5
-                max_ratio = 0.9
+            min_ratio = int(hour) % 24 / 22
+            max_ratio = int(hour) % 24 / 21
         except Exception as e:
             print(e)
             return
         try:
             min_step = math.ceil(int(self.check_item.get("min_step", 10000))*min_ratio)
         except Exception as e:
-            print("初始化步数失败: 已将最小值设置为 19999", e)
+            print("初始化步数失败: 已将最小值设置为 10000", e)
             min_step = 10000
         try:
             max_step = math.ceil(int(self.check_item.get("max_step", 19999))*max_ratio)
@@ -199,6 +211,7 @@ class MiMotion():
         login_token, userid = self.login(user, password)
         if login_token == 0:
             msg = [
+                {"name": "北京时间", "value": f"{hour}:{minute}"},
                 {"name": "帐号信息", "value": f"{user[:4]}****{user[-4:]}"},
                 {"name": "修改信息", "value": f"登陆失败\n"},
             ]
@@ -223,12 +236,14 @@ class MiMotion():
                 #print(f"{response['message']}")
                 if response['message'] == "success":
                     msg = [
-                    {"name": "帐号信息", "value": f"{user[:4]}****{user[-4:]}"},
-                    {"name": "修改信息", "value": f"{response['message']}"},
-                    {"name": "修改步数", "value": f"{step}\n"},
+                        {"name": "北京时间", "value": f"{hour}:{minute}"},
+                        {"name": "帐号信息", "value": f"{user[:4]}****{user[-4:]}"},
+                        {"name": "修改信息", "value": f"{response['message']}"},
+                        {"name": "修改步数", "value": f"{step}\n"},
                     ]
                 else:
                     msg = [
+                        {"name": "北京时间", "value": f"{hour}:{minute}"},
                         {"name": "帐号信息", "value": f"{user[:4]}****{user[-4:]}"},
                         {"name": "修改信息", "value": f"登陆失败\n"},
                     ]
@@ -255,8 +270,7 @@ if __name__ == "__main__":
             sckey = "NO"
         # 企业微信推送
         # 是否开启企业微信推送false关闭true开启，默认关闭，开启后请填写设置并将上面两个都留空
-        if datas.get("POSITION") or datas.get("CORPID") or datas.get("CORPSECRET") or datas.get("AGENTID") or datas.get("TOUSER") or datas.get("TOPARTY") or datas.get("TOTAG"):
-            position = datas.get("POSITION")
+        if datas.get("CORPID") or datas.get("CORPSECRET") or datas.get("AGENTID") or datas.get("TOUSER") or datas.get("TOPARTY") or datas.get("TOTAG"):
             base_url = 'https://qyapi.weixin.qq.com/cgi-bin/gettoken?'
             req_url = 'https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token='
             corpid = datas.get("CORPID")  # 企业ID， 登陆企业微信，在我的企业-->企业信息里查看
@@ -266,7 +280,6 @@ if __name__ == "__main__":
             toparty = datas.get("TOPARTY")  # 指定接收消息的部门，部门ID列表，多个接收者用‘|’分隔，最多支持100个。当touser为”@all”时忽略本参数
             totag = datas.get("TOTAG")  # 指定接收消息的标签，标签ID列表，多个接收者用‘|’分隔，最多支持100个。当touser为”@all”时忽略本参数
         else:
-            position = "false"
             base_url = 'https://qyapi.weixin.qq.com/cgi-bin/gettoken?'
             req_url = 'https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token='
             corpid = "NO"  # 企业ID， 登陆企业微信，在我的企业-->企业信息里查看
@@ -275,32 +288,24 @@ if __name__ == "__main__":
             touser = "NO"  # 指定接收消息的成员，成员ID列表（多个接收者用‘|’分隔，最多支持1000个）。特殊情况：指定为”@all”，则向该企业应用的全部成员发送
             toparty = "NO"  # 指定接收消息的部门，部门ID列表，多个接收者用‘|’分隔，最多支持100个。当touser为”@all”时忽略本参数
             totag = "NO"  # 指定接收消息的标签，标签ID列表，多个接收者用‘|’分隔，最多支持100个。当touser为”@all”时忽略本参数
-
-        # 开启根据地区天气情况降低步数（默认关闭）
-        if datas.get("OPEN_GET_WEATHER"):
-            open_get_weather = datas.get("OPEN_GET_WEATHER")
-        else:
-            open_get_weather = "False"
-        # 设置获取天气的地区（上面开启后必填）如：area = "宁波"
-        if datas.get("AREA"):
-            area = datas.get("AREA")
-        else:
-            area = "NO"
-        # 和风天气 Private KEY
-        if datas.get("OPEN_GET_WEATHER"):
-            qweather = datas.get("OPEN_GET_WEATHER")
-        else:
-            qweather = "False"
+        # pushplus推送
+        pushplus = datas.get("PUSHPLUS")
+        if pushplus is None:
+            pushplus = "NO"
         msg = ""
+        utcnow = datetime.datetime.utcnow()
+        print('utc时间：', utcnow)
+        hour = utcnow.hour + 8
+        minute = utcnow.minute
+        print('北京时间：%d:%d' % (hour, minute))
         for i in range(len(datas.get("MIMOTION", []))):
             #print(i)
             _check_item = datas.get("MIMOTION", [])[i]
             #print(_check_item)
-            msg += MiMotion(check_item=_check_item).main()
+            result = MiMotion(check_item=_check_item).main(hour, minute)
+            msg += str(result)
         print(msg)
-        MiMotion(check_item=_check_item).push('【小米运动步数修改】', msg)
-        MiMotion(check_item=_check_item).push_wx(msg)
-        MiMotion(check_item=_check_item).run(msg)
+        MiMotion(check_item=_check_item).pushAll(msg)
         #推送CONFIG配置
         #MiMotion(check_item=_check_item).run(os.environ["CONFIG"])
     except Exception as e:
