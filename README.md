@@ -16,19 +16,18 @@
   "TOUSER": "",
   "TOPARTY": "",
   "TOTAG": "",
-  "OPEN_GET_WEATHER": "",
-  "AREA": "",
-  "QWEATHER": "",
   "MIMOTION": [
     {
+      "base_step": "20000",
       "max_step": "20000",
       "min_step": "10000",
       "password": "Sitoi",
       "user": "18888xxxxxx"
     },
     {
-      "max_step": "多账号 最大步数填写，请参考上面",
-      "min_step": "多账号 最小步数填写，请参考上面",
+      "base_step": "多账号 基准步数填写，请参考上面",
+      "max_step": "多账号 最大浮动步数填写，请参考上面",
+      "min_step": "多账号 最小浮动步数填写，请参考上面",
       "password": "多账号 密码填写，请参考上面",
       "user": "多账号 手机号填写，请参考上面"
     }
@@ -54,6 +53,7 @@
 | ~~PWD~~ |   ~~小米运动登录密码,仅支持小米运动账号对应的密码~~ |
 | SKEY |   酷推skey，如无填写**NO**|
 | SCKEY |   server酱sckey，如无填写**NO**|
+| PUSHPLUS |   pushplus推送token，如无填写**NO**|
 | POSITION |   是否开启企业微信推送**false**关闭,**true**开启|
 | CORPID |   企业ID， 登陆企业微信，在我的企业-->企业信息里查看,必填，如果没有，填写**NO**|
 | CORPSECRET |   企业微信自建自建应用，每个自建应用里都有单独的secret,必填，如果没有，填写**NO**|
@@ -61,9 +61,6 @@
 | TOUSER |   指定接收消息的成员，成员ID列表（多个接收者用”&#166;”分隔，最多支持1000个）。特殊情况：指定为”@all”，则向该企业应用的全部成员发送，如果没有，填写**NO**|
 | TOPARTY |   指定接收消息的部门，部门ID列表，多个接收者用”&#166;”分隔，最多支持100个。当touser为”@all”时填写”@all”，如果没有，填写**NO**|
 | TOTAG |   指定接收消息的标签，标签ID列表，多个接收者用”&#166;”分隔，最多支持100个。当touser为”@all”时填写”@all”，如果没有，填写**NO**|
-| OPEN_GET_WEATHER |   开启根据地区天气情况降低步数**False**关闭,**True**开启|
-| AREA |   设置获取天气的地区（上面开启后必填）如：**北京**，当**OPEN_GET_WEATHER**为**False**时填写**NO**|
-| QWEATHER | 此处填写和风天气 Private KEY，申请地址https://console.qweather.com/#/apps |
 | PAT |   此处**PAT**需要申请，值为github token，教程详见：https://www.jianshu.com/p/bb82b3ad1d11 ,需要repo和workflow权限,此项必填，避免git push的权限错误。 |
 
 
