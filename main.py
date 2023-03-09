@@ -183,12 +183,12 @@ class MiMotion():
             print(e)
             return
 
-    def main(self, hour, minute):
+    def main(self, hour, minute, utc):
         try:
             user = str(self.check_item.get("user"))
             password = str(self.check_item.get("password"))
-            min_ratio = int(hour) % 24 / 22
-            max_ratio = int(hour) % 24 / 21
+            min_ratio = int(hour) / 22
+            max_ratio = int(hour) / 21
         except Exception as e:
             print(e)
             return
@@ -211,7 +211,7 @@ class MiMotion():
         login_token, userid = self.login(user, password)
         if login_token == 0:
             msg = [
-                {"name": "北京时间", "value": f"{hour}:{minute}"},
+                {"name": "北京时间", "value": f"{hour}:{minute}__{utc}"},
                 {"name": "帐号信息", "value": f"{user[:4]}****{user[-4:]}"},
                 {"name": "修改信息", "value": f"登陆失败\n"},
             ]
@@ -236,14 +236,14 @@ class MiMotion():
                 #print(f"{response['message']}")
                 if response['message'] == "success":
                     msg = [
-                        {"name": "北京时间", "value": f"{hour}:{minute}"},
-                        {"name": "帐号信息", "value": f"{user[:4]}****{user[-4:]}"},
+                        {"name": "北京时间", "value": f"{hour}:{minute}__{utc}"},
+                        {"name": "账号信息", "value": f"{user[:4]}****{user[-4:]}"},
                         {"name": "修改信息", "value": f"{response['message']}"},
                         {"name": "修改步数", "value": f"{step}\n"},
                     ]
                 else:
                     msg = [
-                        {"name": "北京时间", "value": f"{hour}:{minute}"},
+                        {"name": "北京时间", "value": f"{hour}:{minute}__{utc}"},
                         {"name": "帐号信息", "value": f"{user[:4]}****{user[-4:]}"},
                         {"name": "修改信息", "value": f"登陆失败\n"},
                     ]
@@ -295,14 +295,14 @@ if __name__ == "__main__":
         msg = ""
         utcnow = datetime.datetime.utcnow()
         print('utc时间：', utcnow)
-        hour = utcnow.hour + 8
+        hour = (utcnow.hour + 8) % 24
         minute = utcnow.minute
         print('北京时间：%d:%d' % (hour, minute))
         for i in range(len(datas.get("MIMOTION", []))):
             #print(i)
             _check_item = datas.get("MIMOTION", [])[i]
             #print(_check_item)
-            result = MiMotion(check_item=_check_item).main(hour, minute)
+            result = MiMotion(check_item=_check_item).main(hour, minute, utcnow)
             msg += str(result)
         print(msg)
         MiMotion(check_item=_check_item).pushAll(msg)
