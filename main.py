@@ -35,7 +35,7 @@ class MiMotion():
             else:
                 server_url = f"https://sc.ftqq.com/{sckey}.send"
                 params = {
-                    "text": '【小米运动步数修改】',
+                    "text": '【小米运动】',
                     "desp": desp
                 }
 
@@ -67,7 +67,7 @@ class MiMotion():
                     "msgtype": "text",
                     "agentid": agentid,
                     "text": {
-                        "content": "【小米运动步数修改】\n" + msg
+                        "content": "【小米运动】\n" + msg
                     },
                     "safe": 0,
                     "enable_id_trans": 0,
@@ -102,9 +102,9 @@ class MiMotion():
             return
 
     def pushAll(self, msg):
-        self.push('【小米运动步数修改】', msg)
+        self.push('【小米运动】', msg)
         self.push_wx(msg)
-        self.push_pushplus('【小米运动步数修改】', msg)
+        self.push_pushplus('【小米运动】', msg)
         self.run(msg)
 
 
